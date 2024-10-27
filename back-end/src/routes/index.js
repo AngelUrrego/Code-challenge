@@ -15,7 +15,10 @@ module.exports = (client) => {
     router.get('/profile/:userId', profileController.getProfile(client));
 
     // Ruta de puntaje
-    router.post('/update-score', verifyToken, scoreController.updateScore(client));
+    router.post('/update-score', verifyToken, scoreController.updateScore); // Asegúrate de que la función exista
+
+    // Ruta para obtener las puntuaciones del usuario
+    router.get('/score', verifyToken, scoreController.getUserScores); 
 
     return router;
 };
