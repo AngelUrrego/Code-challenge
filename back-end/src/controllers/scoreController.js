@@ -2,22 +2,24 @@ const Score = require('../models/Score');
 const User = require('../models/User'); 
 
 // Función para actualizar la puntuación de un usuario
-exports.updateScore = async (req, res) => {
-    const userId = req.user.id; // Asegúrate de que el usuario esté autenticado
+exports.updateScore = (client) => async (req, res) => {
+    const userId = req.user.id;
     const { score } = req.body;
 
     try {
-        // Verifica que la puntuación sea un número
         if (typeof score !== 'number') {
             return res.status(400).json({ msg: 'El puntaje debe ser un número' });
         }
 
-        // Guarda la nueva puntuación en la colección de puntuaciones
+        // Guarda la nueva puntuación en la base de datos
         const newScore = new Score({ userId, score });
         await newScore.save();
 
-        // Opcional: agrega la puntuación al array de puntuaciones en el modelo de usuario
+        // Agrega el ID de la nueva puntuación en el modelo de usuario
         await User.findByIdAndUpdate(userId, { $push: { scores: newScore._id } });
+
+        // Invalida la caché en Redis para que el perfil se regenere con los datos actualizados
+        await client.del(`userProfile:${userId}`);
 
         res.json({ msg: 'Puntaje actualizado', newScore });
     } catch (error) {
@@ -26,12 +28,20 @@ exports.updateScore = async (req, res) => {
     }
 };
 
+
 // Función para obtener las puntuaciones de un usuario
-exports.getUserScores = async (req, res) => {
-    const userId = req.user.id; // Asegúrate de que el usuario esté autenticado
+exports.getUserScores = (client) => async (req, res) => {
+    const userId = req.user.id;
 
     try {
-        const scores = await Score.find({ userId }); // Encuentra todas las puntuaciones del usuario
+        const cachedScores = await client.get(`userScores:${userId}`);
+        if (cachedScores) {
+            return res.json(JSON.parse(cachedScores));
+        }
+
+        const scores = await Score.find({ userId });
+        await client.set(`userScores:${userId}`, JSON.stringify(scores), { EX: 3600 });
+
         res.json(scores);
     } catch (error) {
         console.error(error);
