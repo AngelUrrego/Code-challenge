@@ -1,87 +1,88 @@
-# Proyecto de API con Caché y Almacenamiento de Datos en MongoDB y Redis
+# API Project with Cache and Data Storage in MongoDB and Redis
 
-Este proyecto es una API para gestionar perfiles de usuario con almacenamiento en caché en Redis y almacenamiento principal en MongoDB. Incluye rutas para registro, inicio de sesión, visualización y actualización de perfiles de usuario, así como gestión de puntuaciones de usuario. La aplicación está desarrollada con Node.js para el backend y React para el frontend.
+This project is an API for managing user profiles with caching in Redis and primary storage in MongoDB. It includes routes for registration, login, viewing and updating user profiles, as well as managing user scores. The application is developed with Node.js for the backend and React for the frontend.
 
-## Características del Proyecto
-- **Autenticación de Usuarios**: Permite registro e inicio de sesión.
-- **Visualización de Perfiles**: Los datos de perfil se obtienen con caché en Redis para reducir la carga en MongoDB.
-- **Actualización de Puntuaciones**: Los usuarios pueden actualizar su puntaje, sincronizando los datos de forma segura y coherente.
-- **Interfaz de Usuario en React**: Vistas para registro, inicio de sesión, visualización y actualización de perfil, accesibles solo para usuarios autenticados.
-  
-## Estructura del Proyecto
-- **Backend (Node.js)**: Contiene las rutas y la lógica del servidor, configurado para conectarse con MongoDB y Redis.
-- **Frontend (React + Vite)**: Permite a los usuarios interactuar con la API mediante vistas y formularios.
-- **Caché en Redis**: Los datos de perfil se almacenan en Redis para mejorar el tiempo de respuesta.
-  
-## Puntos Finales de la API
+## Project Features
+- **User Authentication**: Allows registration and login.
+- **Profile Viewing**: Profile data is fetched with caching in Redis to reduce the load on MongoDB.
+- **Score Updating**: Users can update their score, synchronizing the data securely and consistently.
+- **User Interface in React**: Views for registration, login, profile viewing, and updating, accessible only for authenticated users.
 
-| Ruta               | Método | Descripción                                 |
-|--------------------|--------|---------------------------------------------|
-| `/api/register`    | POST   | Registro de un nuevo usuario                |
-| `/api/login`       | POST   | Inicio de sesión de usuario                 |
-| `/api/profile`     | GET    | Obtención de perfil de usuario con caché    |
-| `/api/updateScore` | POST   | Actualización de puntaje del usuario        |
+## Project Structure
+- **Backend (Node.js)**: Contains the routes and server logic, configured to connect with MongoDB and Redis.
+- **Frontend (React + Vite)**: Enables users to interact with the API through views and forms.
+- **Redis Cache**: Profile data is stored in Redis to improve response time.
 
-## Requisitos
+## API Endpoints
+
+| Route               | Method | Description                                 |
+|---------------------|--------|---------------------------------------------|
+| `/api/register`     | POST   | Register a new user                         |
+| `/api/login`        | POST   | User login                                  |
+| `/api/profile`      | GET    | Fetch user profile with cache               |
+| `/api/updateScore`  | POST   | Update user score                           |
+
+## Requirements
 - Node.js 
 - MongoDB
 - Redis
-- Docker (opcional para ejecución con contenedores)
+- Docker (optional for container execution)
 
-## Configuración del Proyecto
-1. Clona el repositorio:
+## Project Setup
+1. Clone the repository:
    ```bash
-   git clone <url-del-repositorio>
-   cd <directorio-del-proyecto>
+   git clone <repository-url>
+   cd <project-directory>
 
-2. Configure las variables de entorno en el archivo .env
-MONGODB_URI=mongodb://localhost:27017/tu_basedatos
+2. Configure the environment variables in the .env file:
+MONGODB_URI=mongodb://localhost:27017/your_database
 REDIS_HOST=localhost
 REDIS_PORT=6379
-JWT_SECRET=tu_clave_secreta
+JWT_SECRET=your_secret_key
 
-3. configure el frontend para redirigir correctamente las solicitudes al backend: En el archivo vite.config.js del frontend:
+
+3. Configure the frontend to correctly redirect requests to the backend: In the vite.config.js file of the frontend:
 server: {
   proxy: {
     '/api': 'http://localhost:5000'
   },
 },
 
-## EJECUCION DE LA APLICACION
-1. Iniciar MongoDB y Redis (asegúrese de que estén en ejecución).
+## RUNNING THE APPLICATION
+1. Start MongoDB and Redis (make sure they are running).
 
-2. Iniciar el BackEnd: 
+2. Start the Backend:
 cd backend
 npm install
 npm start
 
-3. Iniciar el FrontEnd:
+3. Start the Frontend:
 cd frontend
 npm install
 npm run dev
 
-## EJECUCION CON DOCKER
+## RUNNING WITH DOCKER
 
-1. Nota : Se intentó ejecutar la aplicación en Docker, pero surgieron inconvenientes técnicos. El proyecto se ejecuta perfectamente en local.
+1. Note: The application was attempted to run in Docker, but technical issues arose. The project runs perfectly locally.
 
-Para una implementación en Docker (si decide investigar más), los archivos Dockerfiley docker-compose.yml están configurados como se explica en la sección de configuración avanzada.
+For a Docker implementation (if you decide to investigate further), the Dockerfile and docker-compose.yml files are set up as explained in the advanced setup section.
 
-## ALMACENAMIENTO CACHE EN REDIS 
+## CACHE STORAGE IN REDIS
 
-Redis se utiliza para almacenar en caché los datos de perfil de usuario, optimizando el tiempo de respuesta de la API. Cuando un perfil de usuario se solicita por primera vez, se verifica en Redis; Si no existe, se obtiene de MongoDB y se guarda en Redis con un tiempo de vencimiento predefinido. Esto reduce la carga de consultas a MongoDB y mejora el rendimiento en múltiples solicitudes al mismo perfil.
+Redis is used to cache user profile data, optimizing the API response time. When a user profile is requested for the first time, it is checked in Redis; if it does not exist, it is retrieved from MongoDB and stored in Redis with a predefined expiration time. This reduces the load of queries to MongoDB and improves performance in multiple requests to the same profile.
 
-## ESTRATEGIAS DE ESCALABILIDAD
-Este proyecto implementa las siguientes estrategias de escalabilidad:
+## SCALABILITY STRATEGIES
+This project implements the following scalability strategies:
 
-1. Caché Distribuida con Redis : Mejora el tiempo de respuesta y reduce la carga de la base de datos.
+1. Distributed Cache with Redis: Improves response time and reduces database load.
 
-2. Separación de Servicios en Contenedores : Aunque la implementación de Docker presenta actualmente errores, el uso de contenedores permite escalar y desplegar cada servicio de manera independiente.
+2. Service Separation in Containers: Although the Docker implementation currently presents issues, using containers allows each service to be scaled and deployed independently.
 
-3. JWT para Autenticación : Facilita la escalabilidad de autenticación y seguridad sin requerir almacenamiento de sesiones en el servidor.
+3. JWT for Authentication: Facilitates scalability in authentication and security without requiring session storage on the server.
 
-## GESTION SEGURA DE ACTUALIZACION DE PUNTUACIONES
-Para actualizar el puntaje de un usuario de forma segura y sincronizada, se implementa un mecanismo que valida la autenticidad y los permisos del usuario antes de cualquier modificación. La actualización del puntaje realiza los siguientes pasos:
+## SECURE SCORE UPDATE MANAGEMENT
+To securely and synchronously update a user's score, a mechanism is implemented to validate the user's authenticity and permissions before any modification. The score update performs the following steps:
 
-1. Verifica el usuario autenticado mediante JWT.
-2. Consulta el perfil de usuario desde Redis o MongoDB según corresponda.
-3. Realice la actualización en MongoDB y almacene el nuevo valor en Redis, asegurando consistencia entre caché y base de datos.
+1. Verifies the authenticated user using JWT.
+2. Queries the user profile from Redis or MongoDB as appropriate.
+3. Performs the update in MongoDB and stores the new value in Redis, ensuring consistency between the cache and the database.
